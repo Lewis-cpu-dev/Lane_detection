@@ -1,4 +1,6 @@
 import torch
+# from tqdm.notebook import tqdm
+# from tqdm.auto import tqdm
 import tqdm
 import os
 import numpy as np
@@ -10,14 +12,34 @@ from models.losses import compute_loss
 from utils.visualization import visualize_first_prediction
 from torch.optim import Adam
 
-# Configurations
-BATCH_SIZE = 
-LR = 
-EPOCHS = 
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-DATASET_PATH =  "/opt/data/TUSimple"
-CHECKPOINT_DIR = "checkpoints"
+import shutil
+
+# Configurations (HyperParameters)
+BATCH_SIZE = 16  # try 32 64
+LR = 1e-3  # try 5e-4 ~ 1e-3
+EPOCHS = 100  # try 100 ~ 150
+
+# (1-lambda) L{seg}(binary) + lambda L{disc}(instance)
+CHOICE = "MoreSegLoss"  #
+if CHOICE == "MoreSegLoss":
+    LOSS_LAMBDA = 0.25  # 0.25(MoreSegLoss), 0.75(MoreDiscLoss), 0.5(Balance)
+elif CHOICE == "MoreDiscLoss":
+    LOSS_LAMBDA = 0.75  # 0.25(MoreSegLoss), 0.75(MoreDiscLoss), 0.5(Balance)
+elif CHOICE == "BalanceLoss":
+    LOSS_LAMBDA = 0.5  # 0.25(MoreSegLoss), 0.75(MoreDiscLoss), 0.5(Balance)
+else:
+    print(f"CHOICE : {CHOICE} is not valid. Only support BalanceLoss, MoreSegLoss, MoreDiscLoss")
+CHECKPOINT_DIR = "checkpoints/"+CHOICE  # MoreSegmentLoss
 os.makedirs(CHECKPOINT_DIR, exist_ok=True)
+
+
+NUM_WORKERS = 12
+
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# DATASET_PATH =  "/opt/data/TUSimple"  # for lab computer
+DATASET_PATH =  "/home/lzy/.cache/kagglehub/datasets/manideep1108/tusimple/versions/5/TUSimple"
+# DATASET_PATH =  "/content/drive/MyDrive/Datasets/TUSimple"
+
 
 def validate(model, val_loader):
     """
@@ -42,7 +64,9 @@ def validate(model, val_loader):
                 binary_label=binary_labels,
                 instance_label=instance_labels,
             )
-            loss = binary_loss + instance_loss
+            global LOSS_LAMBDA
+            # loss = binary_loss + instance_loss
+            loss = (1-LOSS_LAMBDA) * binary_loss + LOSS_LAMBDA * instance_loss
 
             val_loss += loss.item()
             binary_losses.append(binary_loss.item())
@@ -60,7 +84,7 @@ def train():
     """
     wandb.init(
         project="lane-detection",
-        name="ENet-Training",
+        name="ENet-Training"+"-"+CHOICE,
         config={
             "batch_size": BATCH_SIZE,
             "learning_rate": LR,
@@ -73,21 +97,21 @@ def train():
     # TODO: Data preparation: Load and preprocess the training and validation datasets.
     # Hint: Use the LaneDataset class and PyTorch's DataLoader.
     ################################################################################
-    # train_dataset = ...
-    # train_loader = DataLoader(...)
+    train_dataset = LaneDataset(dataset_path=DATASET_PATH, mode="train")
+    train_loader = DataLoader(train_dataset, BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
 
-    # val_dataset = ...
-    # val_loader = DataLoader(...)
+    val_dataset = LaneDataset(dataset_path=DATASET_PATH, mode="val")
+    val_loader = DataLoader(val_dataset, BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS)
     ################################################################################
 
     # Model and optimizer initialization
     enet_model = ENet(binary_seg=2, embedding_dim=4).to(DEVICE)
-    
-    
+
+
     # TODO: Initialize the Adam optimizer with appropriate learning rate and weight decay.
     ################################################################################
-    # optimizer = ...
-    
+    optimizer = Adam(enet_model.parameters(), lr=LR, weight_decay=1e-4)
+
     ################################################################################
 
 
@@ -101,8 +125,17 @@ def train():
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
         }, checkpoint_path)
-        wandb.save(checkpoint_path)  # Save to W&B
-        print(f"Checkpoint saved at {checkpoint_path}")
+        # wandb.save(checkpoint_path)  # Save to W&B
+        # print(f"Checkpoint saved at {checkpoint_path}")
+        # checkpoint_path = "checkpoints/enet_checkpoint_epoch_1.pth"
+
+        wandb_checkpoint_dir = os.path.join(wandb.run.dir, "checkpoints", CHOICE)
+        if not os.path.exists(wandb_checkpoint_dir):
+            os.makedirs(wandb_checkpoint_dir)
+
+        wandb_checkpoint_path = os.path.join(wandb.run.dir, checkpoint_path)
+        shutil.copy(checkpoint_path, wandb_checkpoint_path)
+        print(f"Checkpoint copied to {wandb_checkpoint_path}")
 
     # Training loop
     for epoch in range(1, EPOCHS + 1):
@@ -112,23 +145,41 @@ def train():
         instance_losses = []
 
         for batch_idx, (images, binary_labels, instance_labels) in enumerate(tqdm.tqdm(train_loader, desc=f"Epoch {epoch}/{EPOCHS}")):
-            
+
             # TODO: Complete the training step for a single batch.
             ################################################################################
             # Hint:
             # 1. Move `images`, `binary_labels`, and `instance_labels` to the correct device (e.g., GPU).
+            images = images.to(DEVICE)
+            binary_labels   = binary_labels.to(DEVICE)
+            instance_labels = instance_labels.to(DEVICE)
             # 2. Perform a forward pass using `enet_model` to get predictions (`binary_logits` and `instance_embeddings`).
+            binary_logits, instance_embeddings = enet_model(images)
             # 3. Compute the binary and instance losses using `compute_loss`.
+            binary_loss, instance_loss = compute_loss(
+                binary_output   = binary_logits,
+                instance_output = instance_embeddings,
+                binary_label    = binary_labels,
+                instance_label  = instance_labels,
+            )
             # 4. Sum the losses (`loss = binary_loss + instance_loss`) for backpropagation.
+            # loss = binary_loss + instance_loss
+            global LOSS_LAMBDA
+            loss = (1-LOSS_LAMBDA) * binary_loss + LOSS_LAMBDA * instance_loss
             # 5. Zero out the optimizer gradients, backpropagate the loss, and take an optimizer step.
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
 
 
-
+            epoch_loss += loss.item()
+            binary_losses.append(binary_loss.item())
+            instance_losses.append(instance_loss.item())
 
 
             ################################################################################
-            
-            
+
+
             # Log visualizations for the first batch of the epoch
             if batch_idx == 0:
                 combined_row = visualize_first_prediction(
@@ -145,10 +196,10 @@ def train():
         mean_instance_loss = np.mean(instance_losses)
         total_loss = epoch_loss / len(train_loader)
 
-        print(f"Epoch {epoch}/{EPOCHS}: "
-              f"Binary Loss = {mean_binary_loss:.4f}, "
-              f"Instance Loss = {mean_instance_loss:.4f}, "
-              f"Total Loss = {total_loss:.4f}")
+        print(  f"Epoch {epoch}/{EPOCHS}: "
+                f"Binary Loss   = {mean_binary_loss:.4f}, "
+                f"Instance Loss = {mean_instance_loss:.4f}, "
+                f"Total Loss    = {total_loss:.4f}")
 
         wandb.log({
             "epoch": epoch,
@@ -163,11 +214,12 @@ def train():
         # Call the `validate` function, passing the model and validation data loader.
         ################################################################################
         # val_binary_loss, val_instance_loss, val_total_loss = ...
+        val_binary_loss, val_instance_loss, val_total_loss = validate(enet_model, val_loader)
         ################################################################################
-        print(f"Validation Results - Epoch {epoch}: "
-              f"Binary Loss = {val_binary_loss:.4f}, "
-              f"Instance Loss = {val_instance_loss:.4f}, "
-              f"Total Loss = {val_total_loss:.4f}")
+        print(  f"Validation Results - Epoch {epoch}: "
+                f"Binary Loss = {val_binary_loss:.4f}, "
+                f"Instance Loss = {val_instance_loss:.4f}, "
+                f"Total Loss = {val_total_loss:.4f}")
 
         wandb.log({
             "val_binary_loss": val_binary_loss,
