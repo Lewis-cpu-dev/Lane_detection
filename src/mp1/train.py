@@ -20,7 +20,7 @@ LR = 1e-3  # try 5e-4 ~ 1e-3
 EPOCHS = 100  # try 100 ~ 150
 
 # (1-lambda) L{seg}(binary) + lambda L{disc}(instance)
-CHOICE = "MoreSegLoss"  #
+CHOICE = "BalanceLoss"  #
 if CHOICE == "MoreSegLoss":
     LOSS_LAMBDA = 0.25  # 0.25(MoreSegLoss), 0.75(MoreDiscLoss), 0.5(Balance)
 elif CHOICE == "MoreDiscLoss":
@@ -36,8 +36,8 @@ os.makedirs(CHECKPOINT_DIR, exist_ok=True)
 NUM_WORKERS = 12
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-# DATASET_PATH =  "/opt/data/TUSimple"  # for lab computer
-DATASET_PATH =  "/home/lzy/.cache/kagglehub/datasets/manideep1108/tusimple/versions/5/TUSimple"
+DATASET_PATH =  "/opt/data/TUSimple"  # for lab computer
+#DATASET_PATH =  "/home/lzy/.cache/kagglehub/datasets/manideep1108/tusimple/versions/5/TUSimple"
 # DATASET_PATH =  "/content/drive/MyDrive/Datasets/TUSimple"
 
 
