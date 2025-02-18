@@ -1,0 +1,15 @@
+{"time":"2025-02-17T15:52:35.43153622-06:00","level":"INFO","msg":"stream: starting","core version":"0.19.6","symlink path":"/home/ziyir2/Desktop/Lane_detection/src/mp1/wandb/run-20250217_155235-ulep7hiv/logs/debug-core.log"}
+{"time":"2025-02-17T15:52:35.53494858-06:00","level":"INFO","msg":"created new stream","id":"ulep7hiv"}
+{"time":"2025-02-17T15:52:35.534996605-06:00","level":"INFO","msg":"stream: started","id":"ulep7hiv"}
+{"time":"2025-02-17T15:52:35.535104055-06:00","level":"INFO","msg":"writer: Do: started","stream_id":"ulep7hiv"}
+{"time":"2025-02-17T15:52:35.535203543-06:00","level":"INFO","msg":"sender: started","stream_id":"ulep7hiv"}
+{"time":"2025-02-17T15:52:35.535119436-06:00","level":"INFO","msg":"handler: started","stream_id":"ulep7hiv"}
+{"time":"2025-02-17T15:52:35.67263913-06:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2025-02-17T15:52:36.373210497-06:00","level":"INFO","msg":"stream: closing","id":"ulep7hiv"}
+{"time":"2025-02-17T15:52:36.373239672-06:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2025-02-17T15:52:36.373985693-06:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2025-02-17T15:52:36.744038186-06:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2025-02-17T15:52:36.837983339-06:00","level":"INFO","msg":"handler: closed","stream_id":"ulep7hiv"}
+{"time":"2025-02-17T15:52:36.838061265-06:00","level":"INFO","msg":"sender: closed","stream_id":"ulep7hiv"}
+{"time":"2025-02-17T15:52:36.838045806-06:00","level":"INFO","msg":"writer: Close: closed","stream_id":"ulep7hiv"}
+{"time":"2025-02-17T15:52:36.838181934-06:00","level":"INFO","msg":"stream: closed","id":"ulep7hiv"}

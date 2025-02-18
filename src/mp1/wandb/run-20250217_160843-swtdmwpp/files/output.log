@@ -1,0 +1,7 @@
+Checkpoint successfully loaded from checkpoints/BalanceLoss/enet_checkpoint_epoch_96.pth (Epoch 96)
+length of val279
+ and <torch.utils.data.dataloader.DataLoader object at 0x7fcfa9df2fa0>
+Evaluation Results:
+  - Binary Loss:   0.0368
+  - Instance Loss: nan
+  - Total Loss:    nan

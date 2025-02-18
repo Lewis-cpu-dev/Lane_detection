@@ -1,0 +1,7 @@
+Checkpoint successfully loaded from checkpoints/BalanceLoss/enet_checkpoint_epoch_96.pth (Epoch 96)
+Traceback (most recent call last):
+  File "eval.py", line 96, in <module>
+    evaluate()
+  File "eval.py", line 77, in evaluate
+    print(f"length: {len(instance_losses[0].shape)}")
+AttributeError: 'float' object has no attribute 'shape'

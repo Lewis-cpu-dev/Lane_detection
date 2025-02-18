@@ -9,12 +9,13 @@ from models.losses import compute_loss
 from utils.visualization import visualize_first_prediction
 from utils.lane_detector import LaneDetector
 import matplotlib.pyplot as plt
+import cv2
 
 # Configuration
 BATCH_SIZE = 10
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 DATASET_PATH =  "/opt/data/TUSimple"
-CHECKPOINT_PATH = "checkpoints/enet_checkpoint_epoch_best.pth"  # Path to the trained model checkpoint
+CHECKPOINT_PATH = "checkpoints/BalanceLoss/enet_checkpoint_epoch_96.pth"  # Path to the trained model checkpoint
 
 
 def evaluate():
@@ -31,7 +32,7 @@ def evaluate():
         }
     )
 
-    val_dataset = LaneDataset(dataset_path=DATASET_PATH, mode="test")
+    val_dataset = LaneDataset(dataset_path=DATASET_PATH, mode="val")
     val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False)
 
     enet_model = ENet(binary_seg=2, embedding_dim=4).to(DEVICE)
@@ -41,7 +42,7 @@ def evaluate():
 
     enet_model.eval()
     binary_losses, instance_losses, total_losses = [], [], []
-
+    print(f"length of val{len(val_loader)} \n and {val_loader}")
     with torch.no_grad():
         for images, binary_labels, instance_labels in val_loader:
             images = images.to(DEVICE)
@@ -74,7 +75,7 @@ def evaluate():
             # Log the first combined row to W&B
             wandb.log({"visualization": wandb.Image(combined_row, caption="First Combined Visualization")})
             break  # Process only the first batch for visualization
-
+#    print(f"length: {len(instance_losses[0].shape)}")
     mean_binary_loss = np.mean(binary_losses)
     mean_instance_loss = np.mean(instance_losses)
     mean_total_loss = np.mean(total_losses)

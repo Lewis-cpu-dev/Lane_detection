@@ -1,0 +1,42 @@
+{
+  "os":  "Linux-5.15.0-131-generic-x86_64-with-glibc2.17",
+  "python":  "CPython 3.8.20",
+  "startedAt":  "2025-02-18T02:04:25.465347Z",
+  "program":  "problem8.2.py",
+  "codePath":  "src/mp1/problem8.2.py",
+  "git":  {
+    "remote":  "https://github.com/Lewis-cpu-dev/Lane_detection.git",
+    "commit":  "8805fc59afaf7214a4025db448a28797ac120166"
+  },
+  "email":  "cnrongzy@gmail.com",
+  "root":  "/home/ziyir2/Desktop/Lane_detection/src/mp1",
+  "host":  "eceb-5072-24.ews.illinois.edu",
+  "executable":  "/home/ziyir2/.conda/envs/tusimple/bin/python",
+  "codePathLocal":  "problem8.2.py",
+  "cpu_count":  20,
+  "cpu_count_logical":  28,
+  "gpu":  "NVIDIA RTX 2000 Ada Generation",
+  "gpu_count":  1,
+  "disk":  {
+    "/":  {
+      "total":  "1006450962432",
+      "used":  "128030486528"
+    }
+  },
+  "memory":  {
+    "total":  "67092348928"
+  },
+  "cpu":  {
+    "count":  20,
+    "countLogical":  28
+  },
+  "gpu_nvidia":  [
+    {
+      "name":  "NVIDIA RTX 2000 Ada Generation",
+      "memoryTotal":  "17175674880",
+      "cudaCores":  2816,
+      "architecture":  "Ada"
+    }
+  ],
+  "cudaVersion":  "12.8"
+}

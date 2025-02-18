@@ -1,0 +1,6 @@
+Checkpoint successfully loaded from checkpoints/BalanceLoss/enet_checkpoint_epoch_96.pth (Epoch 96)
+length: 1
+Evaluation Results:
+  - Binary Loss:   0.0368
+  - Instance Loss: nan
+  - Total Loss:    nan

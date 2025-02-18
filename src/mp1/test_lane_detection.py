@@ -7,9 +7,9 @@ from models.enet import ENet
 import os
 
 # Define dataset and checkpoint paths
-# DATASET_PATH = "/opt/data/TUSimple/test_set"
-DATASET_PATH =  "/home/lzy/.cache/kagglehub/datasets/manideep1108/tusimple/versions/5/TUSimple/test_set"
-CHECKPOINT_PATH = "checkpoints/BalanceLosss_Laptop/enet_checkpoint_epoch_85.pth"  # Path to the trained model checkpoint
+DATASET_PATH = "/opt/data/TUSimple/test_set"
+# DATASET_PATH =  "/home/lzy/.cache/kagglehub/datasets/manideep1108/tusimple/versions/5/TUSimple/test_set"
+CHECKPOINT_PATH = "checkpoints/BalanceLoss/enet_checkpoint_epoch_96.pth"  # Path to the trained model checkpoint
 
 # Function to load the ENet model
 def load_enet_model(checkpoint_path, device="cuda"):
@@ -97,6 +97,7 @@ def visualize_lanes_row(images, instances_maps, alpha=0.7):
     
     # ####################### TODO: Your code starts Here #######################
     for i in range(num_images):
+        print(i)
         image = cv2.resize(images[i], dsize=(512, 256))
         instances_map = np.array(instances_maps[i]) # * 255 / np.max(instances_maps[i])
         instances_color_map = mapColor(instances_map)
@@ -116,8 +117,7 @@ def visualize_lanes_row(images, instances_maps, alpha=0.7):
 
     # ####################### TODO: Your code ends Here #######################
 
-    plt.tight_layout()
-    plt.show()
+
 
 def main():
     # Initialize device and model
@@ -153,7 +153,8 @@ def main():
     # Visualize all lane predictions in a single row
     if images and instances_maps:
         visualize_lanes_row(images, instances_maps)
-
+    plt.tight_layout()
+    plt.show()
 if __name__ == "__main__":
     main()
 
